@@ -17,8 +17,9 @@
 
 package cn.foreveryang.my12306.common.exception;
 
-import org.opengoofy.index12306.framework.starter.convention.errorcode.BaseErrorCode;
-import org.opengoofy.index12306.framework.starter.convention.errorcode.IErrorCode;
+
+import cn.foreveryang.my12306.common.errorcode.BaseErrorCode;
+import cn.foreveryang.my12306.common.errorcode.IErrorCode;
 
 /**
  * 远程服务调用异常
