@@ -1,6 +1,8 @@
 package cn.foreveryang.my12306.controller;
 
 import cn.foreveryang.my12306.common.Result;
+import cn.foreveryang.my12306.common.Results;
+import cn.foreveryang.my12306.dto.resp.StationQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.TrainStationQueryRespDTO;
 import cn.foreveryang.my12306.service.TrainStationService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +28,16 @@ public class TrainStationController {
     public Result<List<TrainStationQueryRespDTO>> listTrainStationQuery(String trainId){
         log.info("listTrainStationQuery:{}", trainId);
         return trainStationService.listTrainStationQuery(trainId);
+    }
+    
+    /**
+     * 获取所有站点信息
+     * @return 所有站点信息
+     */
+    @GetMapping("/api/ticket-service/station/all")
+    public Result<List<StationQueryRespDTO>> listAllTrainStationQuery() {
+        log.info("list all train station");
+        // 高复用、并发场景考虑使用redis缓存实现
+        return Results.success(trainStationService.listAllTrainStationQuery());
     }
 }
