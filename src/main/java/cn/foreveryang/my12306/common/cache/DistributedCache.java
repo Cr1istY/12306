@@ -22,7 +22,7 @@ public interface DistributedCache extends Cache{
     /**
      * 获取缓存，如查询结果为空，调用 {@link CacheLoader} 加载缓存
      */
-    <T> T get(@NotBlank String key, Class<T> clazz, CacheLoader<T> cacheLoder, TimeUnit timeUnit);
+    <T> T get(@NotBlank String key, Class<T> clazz, CacheLoader<T> cacheLoder, long timeout, TimeUnit timeUnit);
 
     /**
      * 以一种"安全"的方式获取缓存，如查询结果为空，调用 {@link CacheLoader} 加载缓存

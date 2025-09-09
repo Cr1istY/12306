@@ -9,7 +9,7 @@ import cn.foreveryang.my12306.dao.entity.TrainStationDO;
 import cn.foreveryang.my12306.dao.mapper.TrainStationMapper;
 import cn.foreveryang.my12306.dto.resp.StationQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.TrainStationQueryRespDTO;
-import cn.foreveryang.my12306.mapper.StationMapper;
+import cn.foreveryang.my12306.dao.mapper.StationMapper;
 import cn.foreveryang.my12306.service.TrainStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
