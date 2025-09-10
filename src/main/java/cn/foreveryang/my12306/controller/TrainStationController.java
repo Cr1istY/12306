@@ -2,6 +2,8 @@ package cn.foreveryang.my12306.controller;
 
 import cn.foreveryang.my12306.common.Result;
 import cn.foreveryang.my12306.common.Results;
+import cn.foreveryang.my12306.dto.req.RegionStationQueryReqDTO;
+import cn.foreveryang.my12306.dto.resp.RegionStationQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.StationQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.TrainStationQueryRespDTO;
 import cn.foreveryang.my12306.service.TrainStationService;
@@ -40,4 +42,11 @@ public class TrainStationController {
         // 高复用、并发场景考虑使用redis缓存实现
         return Results.success(trainStationService.listAllTrainStationQuery());
     }
+    
+    @GetMapping("/api/ticket-service/region-station/query")
+    public Result<List<RegionStationQueryRespDTO>> listRegionStationQuery(RegionStationQueryReqDTO request) {
+        log.info("listRegionStationQuery:{},{}", request.getQueryType(), request.getName());
+        return Results.success(trainStationService.listRegionStationQuery(request));
+    }
+    
 }
