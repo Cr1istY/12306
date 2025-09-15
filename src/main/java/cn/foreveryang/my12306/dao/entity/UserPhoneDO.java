@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@TableName("t_user_phone_1")
+@TableName("t_user_phone")
 public class UserPhoneDO {
     /**
      * id

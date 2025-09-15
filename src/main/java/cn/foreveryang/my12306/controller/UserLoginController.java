@@ -6,11 +6,10 @@ import cn.foreveryang.my12306.common.Results;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
 import cn.foreveryang.my12306.service.UserLoginService;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +23,26 @@ public class UserLoginController {
         log.info("user login:{}", request.getUsernameOrMailOrPhone());
         return Results.success(userLoginService.userLogin(request));
     }
+    
+    
+    @GetMapping("/api/user-service/check-login")
+    public Result<UserLoginRespDTO> checkLogin(@RequestParam("accessToken") String accessToken) {
+        log.info("check login:{}", accessToken);
+        return Results.success(userLoginService.checkLogin(accessToken));
+    }
+    
+    @GetMapping("/api/user-service/logout")
+    public Result<Void> userLogout(@RequestParam(value = "accessToken", required = false) String accessToken) {
+        log.info("用户登出：{}", accessToken);
+        userLoginService.userLogout(accessToken);
+        return Results.success();
+    }
+    
+    @GetMapping("/api/user-service/has-username")
+    public Result<Boolean> hasUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userLoginService.hasUsername(username));
+    }
+    
     
     
 }

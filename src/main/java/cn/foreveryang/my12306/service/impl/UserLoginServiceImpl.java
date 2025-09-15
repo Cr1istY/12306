@@ -14,15 +14,21 @@ import cn.foreveryang.my12306.mapper.UserMailMapper;
 import cn.foreveryang.my12306.mapper.UserMapper;
 import cn.foreveryang.my12306.mapper.UserPhoneMapper;
 import cn.foreveryang.my12306.service.UserLoginService;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
+import org.redisson.api.RBloomFilter;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import static cn.foreveryang.my12306.common.constant.UserRedisConstant.USER_REGISTER_REUSE_SHARDING;
+import static cn.foreveryang.my12306.common.toolkit.UserReuseUtil.hashShardingIdx;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +38,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     private final UserPhoneMapper userPhoneMapper;
     private final UserMapper userMapper;
     private final DistributedCache distributedCache;
+    private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     
     @Override
     public UserLoginRespDTO userLogin(UserLoginReqDTO request) {
@@ -82,5 +89,27 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
         throw new ServiceException("账号不存在或密码错误");
 
+    }
+
+    @Override
+    public UserLoginRespDTO checkLogin(String accessToken) {
+        return distributedCache.get(accessToken, UserLoginRespDTO.class);
+    }
+
+    @Override
+    public void userLogout(String accessToken) {
+        if (StrUtil.isNotBlank(accessToken)) {
+            distributedCache.delete(accessToken);
+        }
+    }
+
+    @Override
+    public Boolean hasUsername(String username) {
+        boolean hasUsername = userRegisterCachePenetrationBloomFilter.contains(username);
+        if (hasUsername) {
+            StringRedisTemplate instance = (StringRedisTemplate) distributedCache.getInstance();
+            return instance.opsForSet().isMember(USER_REGISTER_REUSE_SHARDING + hashShardingIdx(username), username);
+        }
+        return true;
     }
 }
