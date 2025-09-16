@@ -4,8 +4,11 @@ package cn.foreveryang.my12306.controller;
 import cn.foreveryang.my12306.common.Result;
 import cn.foreveryang.my12306.common.Results;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
+import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
 import cn.foreveryang.my12306.service.UserLoginService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +46,10 @@ public class UserLoginController {
         return Results.success(userLoginService.hasUsername(username));
     }
     
-    
+    @PostMapping("/api/user-service/register")
+    public Result<UserRegisterRespDTO> registerUser(@RequestBody @Valid UserRegisterReqDTO request) {
+        log.info("用户注册: {}", request.getUsername());
+        return Results.success(userLoginService.registerUser(request));
+    }
     
 }
