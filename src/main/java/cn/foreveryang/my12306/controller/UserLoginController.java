@@ -52,4 +52,11 @@ public class UserLoginController {
         return Results.success(userLoginService.registerUser(request));
     }
     
+    
+    @PostMapping("/api/user-service/update")
+    public Result<Void> userUpdate(@RequestBody @Valid UserRegisterReqDTO registerReqDTO) {
+        userLoginService.update(registerReqDTO);
+        return Results.success();
+    }
+    
 }

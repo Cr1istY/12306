@@ -3,7 +3,9 @@ package cn.foreveryang.my12306.service;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
 public interface UserLoginService {
@@ -18,5 +20,8 @@ public interface UserLoginService {
     UserRegisterRespDTO registerUser(UserRegisterReqDTO request);
 
     Integer queryUserDeletionNum(Integer idType, String idCard);
-    
+
+    void update(@Valid UserRegisterReqDTO registerReqDTO);
+
+    public UserQueryRespDTO queryUserByUsername(String username);
 }

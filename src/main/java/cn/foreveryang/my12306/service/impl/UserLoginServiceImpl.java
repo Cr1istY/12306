@@ -12,12 +12,14 @@ import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserInfoDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
 import cn.foreveryang.my12306.mapper.*;
 import cn.foreveryang.my12306.service.UserLoginService;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -174,5 +177,38 @@ public class UserLoginServiceImpl implements UserLoginService {
                 .eq(UserDeletionDO::getIdCard, idCard);
         Long deletionCount = userDeletionMapper.selectCount(queryWrapper);
         return Optional.ofNullable(deletionCount).map(Long::intValue).orElse(0);
+    }
+
+    @Override
+    public UserQueryRespDTO queryUserByUsername(String username) {
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, username);
+        UserDO userDO = userMapper.selectOne(queryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在，请检查用户名是否正确");
+        }
+        return BeanUtil.convert(userDO, UserQueryRespDTO.class);
+    }
+    
+    
+    @Transactional
+    @Override
+    public void update(UserRegisterReqDTO registerReqDTO) {
+        UserQueryRespDTO userQueryRespDTO = queryUserByUsername(registerReqDTO.getUsername());
+        UserDO userDO = BeanUtil.convert(registerReqDTO, UserDO.class);
+        LambdaUpdateWrapper<UserDO> userUpdateWrapper = Wrappers.lambdaUpdate(UserDO.class)
+                .eq(UserDO::getUsername, registerReqDTO.getUsername());
+        userMapper.update(userDO, userUpdateWrapper);
+        if (StrUtil.isNotBlank(registerReqDTO.getMail()) && !Objects.equals(userQueryRespDTO.getMail(), registerReqDTO.getMail())) {
+            LambdaUpdateWrapper<UserMailDO> updateWrapper = Wrappers.lambdaUpdate(UserMailDO.class)
+                    .eq(UserMailDO::getMail, userQueryRespDTO.getMail());
+            userMailMapper.delete(updateWrapper);
+            UserMailDO userMailDO = UserMailDO.builder()
+                    .mail(registerReqDTO.getMail())
+                    .username(registerReqDTO.getUsername())
+                    .build();
+            userMailMapper.insert(userMailDO);
+        }
+
     }
 }
