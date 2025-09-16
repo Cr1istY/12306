@@ -3,6 +3,7 @@ package cn.foreveryang.my12306.service;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserQueryActualRespDTO;
 import cn.foreveryang.my12306.dto.resp.UserQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
 import jakarta.validation.Valid;
@@ -24,4 +25,6 @@ public interface UserLoginService {
     void update(@Valid UserRegisterReqDTO registerReqDTO);
 
     public UserQueryRespDTO queryUserByUsername(String username);
+
+    UserQueryActualRespDTO queryActualUserByUsername(@NotEmpty String username);
 }

@@ -10,10 +10,7 @@ import cn.foreveryang.my12306.common.toolkit.JWTUtil;
 import cn.foreveryang.my12306.dao.entity.*;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
-import cn.foreveryang.my12306.dto.resp.UserInfoDTO;
-import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
-import cn.foreveryang.my12306.dto.resp.UserQueryRespDTO;
-import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
+import cn.foreveryang.my12306.dto.resp.*;
 import cn.foreveryang.my12306.mapper.*;
 import cn.foreveryang.my12306.service.UserLoginService;
 import cn.hutool.core.util.StrUtil;
@@ -26,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -189,8 +187,13 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
         return BeanUtil.convert(userDO, UserQueryRespDTO.class);
     }
-    
-    
+
+    @Override
+    public UserQueryActualRespDTO queryActualUserByUsername(String username) {
+        return BeanUtil.convert(queryUserByUsername(username), UserQueryActualRespDTO.class);
+    }
+
+
     @Transactional
     @Override
     public void update(UserRegisterReqDTO registerReqDTO) {

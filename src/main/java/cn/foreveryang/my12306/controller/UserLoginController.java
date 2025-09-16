@@ -6,6 +6,8 @@ import cn.foreveryang.my12306.common.Results;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserQueryActualRespDTO;
+import cn.foreveryang.my12306.dto.resp.UserQueryRespDTO;
 import cn.foreveryang.my12306.dto.resp.UserRegisterRespDTO;
 import cn.foreveryang.my12306.service.UserLoginService;
 import jakarta.validation.Valid;
@@ -58,5 +60,22 @@ public class UserLoginController {
         userLoginService.update(registerReqDTO);
         return Results.success();
     }
+
+    /**
+     * 根据用户名查询用户信息
+     */
+    @GetMapping("/api/user-service/query")
+    public Result<UserQueryRespDTO> queryUserByUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userLoginService.queryUserByUsername(username));
+    }
+
+    /**
+     * 根据用户名查询用户无脱敏信息
+     */
+    @GetMapping("/api/user-service/actual/query")
+    public Result<UserQueryActualRespDTO> queryActualUserByUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userLoginService.queryActualUserByUsername(username));
+    }
+    
     
 }
