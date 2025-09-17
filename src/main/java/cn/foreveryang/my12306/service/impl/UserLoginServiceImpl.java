@@ -8,11 +8,13 @@ import cn.foreveryang.my12306.common.exception.ServiceException;
 import cn.foreveryang.my12306.common.toolkit.BeanUtil;
 import cn.foreveryang.my12306.common.toolkit.JWTUtil;
 import cn.foreveryang.my12306.dao.entity.*;
+import cn.foreveryang.my12306.dto.req.UserDeletionReqDTO;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.*;
 import cn.foreveryang.my12306.mapper.*;
 import cn.foreveryang.my12306.service.UserLoginService;
+import cn.foreveryang.my12306.service.user.core.UserContext;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,10 +22,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shardingsphere.distsql.parser.autogen.KernelDistSQLStatementParser;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,8 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static cn.foreveryang.my12306.common.constant.UserRedisConstant.LOCK_USER_REGISTER;
-import static cn.foreveryang.my12306.common.constant.UserRedisConstant.USER_REGISTER_REUSE_SHARDING;
+import static cn.foreveryang.my12306.common.constant.UserRedisConstant.*;
 import static cn.foreveryang.my12306.common.enums.UserRegisterErrorCodeEnum.*;
 import static cn.foreveryang.my12306.common.toolkit.UserReuseUtil.hashShardingIdx;
 
@@ -93,11 +94,12 @@ public class UserLoginServiceImpl implements UserLoginService {
             String token = JWTUtil.generateToken(userInfo);
             UserLoginRespDTO userLogin = UserLoginRespDTO.builder()
                     .userId(userInfo.getUserId())
-                    .userName(userInfo.getUserName())
+                    .username(userInfo.getUserName())
                     .realName(userInfo.getRealName())
                     .accessToken(token)
                     .build();
             distributedCache.put(token, JSON.toJSONString(userLogin), 30, TimeUnit.MINUTES);
+            // UserContext.setUser(userInfo);
             return userLogin;
         }
         throw new ServiceException("账号不存在或密码错误");
@@ -179,6 +181,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Override
     public UserQueryRespDTO queryUserByUsername(String username) {
+        log.info("用户查询 {}", username);
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
                 .eq(UserDO::getUsername, username);
         UserDO userDO = userMapper.selectOne(queryWrapper);
@@ -191,6 +194,50 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public UserQueryActualRespDTO queryActualUserByUsername(String username) {
         return BeanUtil.convert(queryUserByUsername(username), UserQueryActualRespDTO.class);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deletion(UserDeletionReqDTO request) {
+        String username = UserContext.getUsername();
+        if (!Objects.equals(username, request.getUsername())) {
+            //
+            log.error("用户尝试删除其他用户！！！");
+            throw new ClientException("用户名不匹配");
+        }
+        RLock lock = redissonClient.getLock(USER_DELETION + request.getUsername());
+        lock.lock();
+        try {
+            UserQueryRespDTO userQueryRespDTO = queryUserByUsername(username);
+            UserDeletionDO userDeletionDO = UserDeletionDO.builder()
+                    .idType(userQueryRespDTO.getIdType())
+                    .idCard(userQueryRespDTO.getIdCard())
+                    .build();
+            userDeletionMapper.insert(userDeletionDO);
+            UserDO userDO = new UserDO();
+            userDO.setDeletionTime(System.currentTimeMillis());
+            userDO.setUsername(username);
+            userMapper.deletionUser(userDO);
+            UserPhoneDO userPhoneDO = UserPhoneDO.builder()
+                    .phone(userQueryRespDTO.getPhone())
+                    .deletionTime(System.currentTimeMillis())
+                    .build();
+            userPhoneMapper.deletionUser(userPhoneDO);
+            if (StrUtil.isNotBlank(userQueryRespDTO.getMail())) {
+                UserMailDO userMailDO = UserMailDO.builder()
+                        .mail(userQueryRespDTO.getMail())
+                        .deletionTime(System.currentTimeMillis())
+                        .build();
+                userMailMapper.deletionUser(userMailDO);
+            }
+            distributedCache.delete(UserContext.getToken());
+            userReuseMapper.insert(new UserReuseDO(username));
+            StringRedisTemplate instance = (StringRedisTemplate) distributedCache.getInstance();
+            instance.opsForSet().add(USER_REGISTER_REUSE_SHARDING + hashShardingIdx(username), username);
+        } finally {
+            lock.unlock();
+        }
+
     }
 
 

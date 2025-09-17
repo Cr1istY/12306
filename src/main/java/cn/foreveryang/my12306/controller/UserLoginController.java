@@ -3,6 +3,7 @@ package cn.foreveryang.my12306.controller;
 
 import cn.foreveryang.my12306.common.Result;
 import cn.foreveryang.my12306.common.Results;
+import cn.foreveryang.my12306.dto.req.UserDeletionReqDTO;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.N;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -77,5 +79,9 @@ public class UserLoginController {
         return Results.success(userLoginService.queryActualUserByUsername(username));
     }
     
+    public Result<Void> deletion(@RequestBody @Valid UserDeletionReqDTO request) {
+        userLoginService.deletion(request);
+        return Results.success();
+    }
     
 }
