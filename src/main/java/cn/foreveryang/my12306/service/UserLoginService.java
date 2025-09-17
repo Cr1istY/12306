@@ -1,5 +1,6 @@
 package cn.foreveryang.my12306.service;
 
+import cn.foreveryang.my12306.dto.req.UserDeletionReqDTO;
 import cn.foreveryang.my12306.dto.req.UserLoginReqDTO;
 import cn.foreveryang.my12306.dto.req.UserRegisterReqDTO;
 import cn.foreveryang.my12306.dto.resp.UserLoginRespDTO;
@@ -27,4 +28,6 @@ public interface UserLoginService {
     public UserQueryRespDTO queryUserByUsername(String username);
 
     UserQueryActualRespDTO queryActualUserByUsername(@NotEmpty String username);
+
+    void deletion(@Valid UserDeletionReqDTO request);
 }
