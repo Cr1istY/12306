@@ -94,12 +94,12 @@ public class UserLoginServiceImpl implements UserLoginService {
             String token = JWTUtil.generateToken(userInfo);
             UserLoginRespDTO userLogin = UserLoginRespDTO.builder()
                     .userId(userInfo.getUserId())
-                    .userName(userInfo.getUserName())
+                    .username(userInfo.getUserName())
                     .realName(userInfo.getRealName())
                     .accessToken(token)
                     .build();
             distributedCache.put(token, JSON.toJSONString(userLogin), 30, TimeUnit.MINUTES);
-            UserContext.setUser(userInfo);
+            // UserContext.setUser(userInfo);
             return userLogin;
         }
         throw new ServiceException("账号不存在或密码错误");
