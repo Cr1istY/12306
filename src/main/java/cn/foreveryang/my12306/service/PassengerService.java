@@ -11,4 +11,6 @@ public interface PassengerService {
     void savePassenger(PassengerReqDTO request);
 
     List<PassengerRespDTO> listPassengerQueryByIds(String username, List<Long> ids);
+
+    void updatePassenger(PassengerReqDTO request);
 }

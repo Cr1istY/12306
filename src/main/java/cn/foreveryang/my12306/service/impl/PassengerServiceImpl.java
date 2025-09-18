@@ -9,7 +9,6 @@ import cn.foreveryang.my12306.dao.entity.PassengerDO;
 import cn.foreveryang.my12306.dto.req.PassengerReqDTO;
 import cn.foreveryang.my12306.dto.resp.PassengerRespDTO;
 import cn.foreveryang.my12306.mapper.PassengerMapper;
-import cn.foreveryang.my12306.mapper.UserMapper;
 import cn.foreveryang.my12306.service.PassengerService;
 import cn.foreveryang.my12306.service.user.core.UserContext;
 import cn.hutool.core.collection.CollUtil;
@@ -18,9 +17,9 @@ import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.google.common.base.Verify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -120,8 +119,29 @@ public class PassengerServiceImpl implements PassengerService {
                 .map(each -> BeanUtil.convert(each, PassengerRespDTO.class))
                 .collect(Collectors.toList());
     }
-    
-    
-    
-    
+
+    @Override
+    public void updatePassenger(PassengerReqDTO request) {
+        verifyPassenger(request);
+        String username = UserContext.getUsername();
+        try {
+            PassengerDO passengerDO = BeanUtil.convert(request, PassengerDO.class);
+            passengerDO.setUsername(username);
+            LambdaUpdateWrapper<PassengerDO> updateWrapper = Wrappers.lambdaUpdate(PassengerDO.class)
+                    .eq(PassengerDO::getId, request.getId())
+                    .eq(PassengerDO::getUsername, username);
+            int updated = passengerMapper.update(passengerDO, updateWrapper);
+            if (!SqlHelper.retBool(updated)) {
+                throw new ServiceException(String.format("[%s] 修改乘车人失败", username));
+            }
+        } catch (Exception ex) {
+            if (ex instanceof ServiceException) {
+                log.error("{}，请求参数：{}", ex.getMessage(), JSON.toJSONString(request));
+            } else {
+                log.error("[{}] 修改乘车人失败，请求参数：{}", username, JSON.toJSONString(request), ex);
+            }
+            throw ex;
+            }
+        delUserPassengerCache(username);
+    }
 }

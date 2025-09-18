@@ -36,6 +36,11 @@ public class PassengerController {
         return Results.success(passengerService.listPassengerQueryByIds(username, ids));
     }
     
+    @PostMapping("/api/user-service/passenger/update")
+    public Result<Void> updatePassenger(@RequestBody PassengerReqDTO request) {
+        passengerService.updatePassenger(request);
+        return Results.success();
+    }
     
     
 }
