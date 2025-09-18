@@ -6,8 +6,8 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import java.util.Optional;
 
 public final class UserContext {
-    private static final ThreadLocal<UserInfoDTO> USER_THREAD_LOCAL = new TransmittableThreadLocal<>();
-
+     private static final ThreadLocal<UserInfoDTO> USER_THREAD_LOCAL = new TransmittableThreadLocal<>();
+    // private static final ThreadLocal<UserInfoDTO> USER_THREAD_LOCAL = new ThreadLocal<>();
     /**
      * 设置用户至上下文
      *
@@ -34,7 +34,7 @@ public final class UserContext {
      */
     public static String getUsername() {
         UserInfoDTO userInfoDTO = USER_THREAD_LOCAL.get();
-        return Optional.ofNullable(userInfoDTO).map(UserInfoDTO::getUserName).orElse(null);
+        return Optional.ofNullable(userInfoDTO).map(UserInfoDTO::getUsername).orElse(null);
     }
 
     /**
