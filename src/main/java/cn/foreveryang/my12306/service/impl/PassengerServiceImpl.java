@@ -15,6 +15,7 @@ import cn.foreveryang.my12306.service.user.core.UserContext;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -28,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static cn.foreveryang.my12306.common.constant.UserRedisConstant.USER_PASSENGER_LIST;
 
@@ -105,4 +107,21 @@ public class PassengerServiceImpl implements PassengerService {
         }
         delUserPassengerCache(username);
     }
+
+    @Override
+    public List<PassengerRespDTO> listPassengerQueryByIds(String username, List<Long> ids) {
+        String actualUserPassengerListStr = getActualUserPassengerListStr(username);
+        if (StrUtil.isEmpty(actualUserPassengerListStr)) {
+            return List.of();
+        }
+        return JSON.parseArray(actualUserPassengerListStr, PassengerDO.class)
+                .stream()
+                .filter(each -> ids.contains(each.getId()))
+                .map(each -> BeanUtil.convert(each, PassengerRespDTO.class))
+                .collect(Collectors.toList());
+    }
+    
+    
+    
+    
 }
