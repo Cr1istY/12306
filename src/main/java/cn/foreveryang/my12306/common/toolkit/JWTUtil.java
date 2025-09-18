@@ -25,7 +25,7 @@ public final class JWTUtil {
     public static String generateToken(UserInfoDTO userInfo) {
         Map<String, Object> customerUserMap = new HashMap<>();
         customerUserMap.put(USER_ID_KEY, userInfo.getUserId());
-        customerUserMap.put(USER_NAME_KEY, userInfo.getUserName());
+        customerUserMap.put(USER_NAME_KEY, userInfo.getUsername());
         customerUserMap.put(REAL_NAME_KEY, userInfo.getRealName());
 
         SecretKey secretKey = Keys.hmacShaKeyFor(SECRET.getBytes());

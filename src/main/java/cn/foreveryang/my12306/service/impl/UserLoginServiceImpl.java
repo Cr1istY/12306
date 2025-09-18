@@ -88,16 +88,17 @@ public class UserLoginServiceImpl implements UserLoginService {
         if (userDO != null) {
             UserInfoDTO userInfo = UserInfoDTO.builder()
                     .userId(String.valueOf(userDO.getId()))
-                    .userName(userDO.getUsername())
+                    .username(userDO.getUsername())
                     .realName(userDO.getRealName())
                     .build();
             String token = JWTUtil.generateToken(userInfo);
             UserLoginRespDTO userLogin = UserLoginRespDTO.builder()
                     .userId(userInfo.getUserId())
-                    .username(userInfo.getUserName())
+                    .username(userInfo.getUsername())
                     .realName(userInfo.getRealName())
                     .accessToken(token)
                     .build();
+            userInfo.setToken(token);
             distributedCache.put(token, JSON.toJSONString(userLogin), 30, TimeUnit.MINUTES);
             // UserContext.setUser(userInfo);
             return userLogin;

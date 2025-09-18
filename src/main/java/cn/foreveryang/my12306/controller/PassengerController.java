@@ -7,10 +7,7 @@ import cn.foreveryang.my12306.dto.resp.PassengerRespDTO;
 import cn.foreveryang.my12306.service.PassengerService;
 import cn.foreveryang.my12306.service.user.core.UserContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,6 +30,17 @@ public class PassengerController {
         return Results.success(passengerService.listPassengerQueryByUsername(UserContext.getUsername()));
     }
     
+    @GetMapping("/api/user-service/passenger/query/ids")
+    public Result<List<PassengerRespDTO>> listPassengerQueryByIds(@RequestParam("username") String username, @RequestParam("ids") List<Long> ids) {
+        
+        return Results.success(passengerService.listPassengerQueryByIds(username, ids));
+    }
+    
+    @PostMapping("/api/user-service/passenger/update")
+    public Result<Void> updatePassenger(@RequestBody PassengerReqDTO request) {
+        passengerService.updatePassenger(request);
+        return Results.success();
+    }
     
     
 }
