@@ -100,7 +100,7 @@ public class UserLoginServiceImpl implements UserLoginService {
                     .build();
             userInfo.setToken(token);
             distributedCache.put(token, JSON.toJSONString(userLogin), 30, TimeUnit.MINUTES);
-            UserContext.setUser(userInfo);
+            // UserContext.setUser(userInfo);
             return userLogin;
         }
         throw new ServiceException("账号不存在或密码错误");
